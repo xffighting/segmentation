@@ -66,11 +66,11 @@ def dict_to_tf_example(data, label):
 
 
 def create_tf_record(output_filename, file_pars):
-    """Creates a TFRecord from data in file_pars
+    """Creates a TFRecord from file_pars
 
     Args:
         output_filename: Path to where output file is saved.
-        file_pars: Data pairs where the data is wanted to be saved to tf record
+        file_pars: Data pairs of which the data will be saved to tf record
     """
     writer = tf.python_io.TFRecordWriter(output_filename)
 
