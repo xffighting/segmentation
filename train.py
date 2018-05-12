@@ -105,41 +105,48 @@ upsampled_logits = tf.nn.conv2d_transpose(logits, upsample_filter_tensor_x2,
 
 
 upsampled_logits = upsampled_logits + aux_logits_16s
-
-# Add an additional X2 upsampling
-
-# Get the pool3 predition
+print('feixi: first upsample logits shape:',tf.shape(upsampled_logits))
+############################ Added Code Here ########################
+# Add the x2 upsampleing 
+print('step 1')
 pool3_feature = end_points['vgg_16/pool3']
+print('feixi pool3 feature shape:',tf.shape(pool3_feature))
+print('step 2')
 with tf.variable_scope('vgg_16/fc8'):
+    print('step 3')
     aux_logits_8s = slim.conv2d(pool3_feature, number_of_classes, [1, 1],
                                  activation_fn=None,
                                  weights_initializer=tf.zeros_initializer,
                                  scope='conv_pool3')
-
+print('feixi aux_logits_8s shape:',tf.shape(aux_logits_8s))
+# Perform the upsampling
+print('step 4')
 upsample_filter_np_x2 = bilinear_upsample_weights(2,  # upsample_factor,
                                                   number_of_classes)
-
-upsample_filter_tensor_x2 = tf.Variable(upsample_filter_np_x2, name='vgg_16/fc8/t_conv_x2')
-
-upsampled_logits = tf.nn.conv2d_transpose(logits, upsample_filter_tensor_x2,
+print('step 5')
+upsample_filter_tensor_x2 = tf.Variable(upsample_filter_np_x2, name='vgg_16/fc8/t_conv_x2_2')
+print('step 6')
+upsampled_logits = tf.nn.conv2d_transpose(upsampled_logits, upsample_filter_tensor_x2,
                                           output_shape=tf.shape(aux_logits_8s),
                                           strides=[1, 2, 2, 1],
                                           padding='SAME')
+print('feixi after x2 upsample logits shape:',tf.shape(upsampled_logits))                                        
 
+print('step 7')
 upsampled_logits = upsampled_logits + aux_logits_8s
 
-
-# x8 upsampleing
+print('step 8')
+######################################################################
 upsample_filter_np_x8 = bilinear_upsample_weights(upsample_factor,
                                                    number_of_classes)
-
+print('step 9')
 upsample_filter_tensor_x8 = tf.Variable(upsample_filter_np_x8, name='vgg_16/fc8/t_conv_x8')
 upsampled_logits = tf.nn.conv2d_transpose(upsampled_logits, upsample_filter_tensor_x8,
                                           output_shape=upsampled_logits_shape,
                                           strides=[1, upsample_factor, upsample_factor, 1],
                                           padding='SAME')
 
-
+print('step 10')
 lbl_onehot = tf.one_hot(annotation_tensor, number_of_classes)
 cross_entropies = tf.nn.softmax_cross_entropy_with_logits(logits=upsampled_logits,
                                                           labels=lbl_onehot)
